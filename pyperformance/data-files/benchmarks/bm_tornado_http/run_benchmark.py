@@ -103,4 +103,16 @@ if __name__ == "__main__":
     runner = pyperf.Runner(**kw)
     runner.metadata['description'] = ("Test the performance of HTTP requests "
                                       "with Tornado.")
-    runner.bench_time_func('tornado_http', bench_tornado)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_tornado(1)
+    else:
+        runner.bench_time_func('tornado_http', bench_tornado)

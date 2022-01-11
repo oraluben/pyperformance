@@ -159,6 +159,18 @@ if __name__ == "__main__":
         name = 'logging_%s' % bench
         bench_func = BENCHMARKS[bench]
 
-        runner.bench_time_func(name, bench_func,
-                               logger, stream,
-                               inner_loops=10)
+
+        cds_mode = None
+        try:
+            import cds
+
+            cds_mode = cds._cds.flags.mode
+        except ImportError:
+            pass
+
+        if cds_mode == 1:
+            bench_func(1, logger, stream)
+        else:
+            runner.bench_time_func(name, bench_func,
+                                   logger, stream,
+                                   inner_loops=10)

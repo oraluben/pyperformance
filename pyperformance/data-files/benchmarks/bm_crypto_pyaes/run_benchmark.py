@@ -42,4 +42,15 @@ if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = ("Pure-Python Implementation "
                                       "of the AES block-cipher")
-    runner.bench_time_func('crypto_pyaes', bench_pyaes)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_pyaes(1)
+    else:
+        runner.bench_time_func('crypto_pyaes', bench_pyaes)

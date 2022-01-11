@@ -404,6 +404,17 @@ if __name__ == "__main__":
     runner.metadata['raytrace_width'] = args.width
     runner.metadata['raytrace_height'] = args.height
 
-    runner.bench_time_func('raytrace', bench_raytrace,
-                           args.width, args.height,
-                           args.filename)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_raytrace(1, args.width, args.height, args.filename)
+    else:
+        runner.bench_time_func('raytrace', bench_raytrace,
+                               args.width, args.height,
+                               args.filename)

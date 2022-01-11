@@ -66,4 +66,16 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Test regex compilation performance"
 
     regexes = capture_regexes()
-    runner.bench_time_func('regex_compile', bench_regex_compile, regexes)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_regex_compile(1, regexes)
+    else:
+        runner.bench_time_func('regex_compile', bench_regex_compile, regexes)

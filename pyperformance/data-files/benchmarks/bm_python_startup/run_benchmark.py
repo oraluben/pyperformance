@@ -34,4 +34,17 @@ if __name__ == "__main__":
     else:
         command.extend(("-c", "pass"))
 
-    runner.bench_command(name, command)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        from subprocess import run, DEVNULL
+
+        run(command, env={'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst'}, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        runner.bench_command(name, command)

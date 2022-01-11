@@ -86,4 +86,16 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Telco decimal benchmark"
 
     filename = rel_path("data", "telco-bench.b")
-    runner.bench_time_func('telco', bench_telco, filename)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_telco(1, filename)
+    else:
+        runner.bench_time_func('telco', bench_telco, filename)

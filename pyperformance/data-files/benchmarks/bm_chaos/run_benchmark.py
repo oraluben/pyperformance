@@ -267,9 +267,20 @@ def main(runner, args):
     runner.metadata['chaos_rng_seed'] = args.rng_seed
 
     chaos = Chaosgame(splines, args.thickness)
-    runner.bench_func('chaos', chaos.create_image_chaos,
-                      args.width, args.height, args.iterations,
-                      args.filename, args.rng_seed)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        chaos.create_image_chaos(args.width, args.height, args.iterations, args.filename, args.rng_seed)
+    else:
+        runner.bench_func('chaos', chaos.create_image_chaos,
+                          args.width, args.height, args.iterations,
+                          args.filename, args.rng_seed)
 
 
 def add_cmdline_args(cmd, args):

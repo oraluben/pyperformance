@@ -218,8 +218,20 @@ def main():
     se_nh = get_senh(board, cti)
 
     solve_arg = SOLVE_ARG
-    runner.bench_time_func('meteor_contest', bench_meteor_contest,
-                           board, pieces, solve_arg, fps, se_nh)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_meteor_contest(1, board, pieces, solve_arg, fps, se_nh)
+    else:
+        runner.bench_time_func('meteor_contest', bench_meteor_contest,
+                               board, pieces, solve_arg, fps, se_nh)
 
 
 if __name__ == "__main__":

@@ -184,6 +184,7 @@ class VirtualEnvironment(object):
                  inherit_environ=None,
                  name=None,
                  usebase=False,
+                 install_cds=False,
                  ):
         if usebase:
             python, _, _ = _pythoninfo.inspect_python_install(python)
@@ -195,6 +196,8 @@ class VirtualEnvironment(object):
         self._pip_program = None
         self._force_old_pip = False
         self._prepared = False
+
+        self.install_cds = install_cds
 
     @property
     def name(self):
@@ -432,6 +435,17 @@ class VirtualEnvironment(object):
             cmd = pip_program + ['install', '-U']
             cmd.extend(basereqs.installer)
             self.run_cmd(cmd)
+
+        if self.install_cds:
+            cmd = pip_program + ['install', '-U']
+            cmd.append(self.install_cds)
+            if not self.inherit_environ:
+                self.inherit_environ = []
+            self.inherit_environ.insert(0, 'SITE_HOOK')
+            os.environ['SITE_HOOK'] = 'ON'
+            self.run_cmd(cmd)
+            del os.environ['SITE_HOOK']
+            self.inherit_environ.pop(0)
 
         if install:
             # install pyperformance inside the virtual environment

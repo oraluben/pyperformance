@@ -667,4 +667,15 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Solver of Hexiom board game"
     runner.metadata['hexiom_level'] = args.level
 
-    runner.bench_time_func('hexiom', main, args.level)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        main(1, args.level)
+    else:
+        runner.bench_time_func('hexiom', main, args.level)

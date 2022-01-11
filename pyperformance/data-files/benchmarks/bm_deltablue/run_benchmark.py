@@ -633,4 +633,15 @@ if __name__ == "__main__":
     runner.metadata['description'] = "DeltaBlue benchmark"
 
     n = 100
-    runner.bench_func('deltablue', delta_blue, n)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        delta_blue(n)
+    else:
+        runner.bench_func('deltablue', delta_blue, n)

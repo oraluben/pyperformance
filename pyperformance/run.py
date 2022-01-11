@@ -65,6 +65,7 @@ def run_benchmarks(should_run, python, options):
             options.python,
             options.venv,
             inherit_environ=options.inherit_environ,
+            install_cds=options.install_cds,
         )
         venv.ensure(refresh=False)
         venvs.add(venv.get_path())
@@ -77,6 +78,7 @@ def run_benchmarks(should_run, python, options):
             inherit_environ=options.inherit_environ,
             name=bench_runid.name,
             usebase=True,
+            install_cds=options.install_cds,
         )
         print(f'({i+1:>2}/{len(to_run)}) creating venv for benchmark ({bench.name})')
         venv_path = venv.get_path()
@@ -134,6 +136,7 @@ def run_benchmarks(should_run, python, options):
                 pyperf_opts,
                 venv=bench_venv,
                 verbose=options.verbose,
+                enable_cds=options.enable_cds,
             )
         except Exception as exc:
             print("ERROR: Benchmark %s failed: %s" % (name, exc))

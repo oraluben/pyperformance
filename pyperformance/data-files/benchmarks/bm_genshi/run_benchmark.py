@@ -61,7 +61,21 @@ if __name__ == "__main__":
     else:
         benchmarks = sorted(BENCHMARKS)
 
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
     for bench in benchmarks:
         name = 'genshi_%s' % bench
         tmpl_cls, tmpl_str = BENCHMARKS[bench]
-        runner.bench_time_func(name, bench_genshi, tmpl_cls, tmpl_str)
+
+        if cds_mode == 1:
+            bench_genshi(1, tmpl_cls, tmpl_str)
+        else:
+            runner.bench_time_func(name, bench_genshi, tmpl_cls, tmpl_str)
+

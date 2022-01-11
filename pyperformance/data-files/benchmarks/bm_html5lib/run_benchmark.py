@@ -30,4 +30,15 @@ if __name__ == "__main__":
     with open(filename, "rb") as fp:
         html_file = io.BytesIO(fp.read())
 
-    runner.bench_func('html5lib', bench_html5lib, html_file)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_html5lib(html_file)
+    else:
+        runner.bench_func('html5lib', bench_html5lib, html_file)

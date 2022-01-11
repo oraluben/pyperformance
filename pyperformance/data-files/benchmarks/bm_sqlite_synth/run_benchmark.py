@@ -54,4 +54,16 @@ def bench_sqlite(loops):
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "Benchmark Python aggregate for SQLite"
-    runner.bench_time_func('sqlite_synth', bench_sqlite)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_sqlite(1)
+    else:
+        runner.bench_time_func('sqlite_synth', bench_sqlite)

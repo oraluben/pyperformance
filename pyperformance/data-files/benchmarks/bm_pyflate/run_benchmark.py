@@ -662,4 +662,17 @@ if __name__ == '__main__':
 
     filename = os.path.join(os.path.dirname(__file__),
                             "data", "interpreter.tar.bz2")
-    runner.bench_time_func('pyflate', bench_pyflake, filename)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_pyflake(1, filename)
+    else:
+        runner.bench_time_func('pyflate', bench_pyflake, filename)
+

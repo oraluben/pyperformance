@@ -152,5 +152,17 @@ if __name__ == '__main__':
                                        % DEFAULT_REFERENCE)
 
     args = runner.parse_args()
-    runner.bench_time_func('nbody', bench_nbody,
-                           args.reference, args.iterations)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_nbody(1, args.reference, args.iterations)
+    else:
+        runner.bench_time_func('nbody', bench_nbody,
+                               args.reference, args.iterations)

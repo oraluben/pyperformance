@@ -103,4 +103,15 @@ if __name__ == "__main__":
     json_dict_group = json.dumps(DICT_GROUP)
     objs = (json_dict, json_tuple, json_dict_group)
 
-    runner.bench_func('json_loads', bench_json_loads, objs, inner_loops=20)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_json_loads(objs)
+    else:
+        runner.bench_func('json_loads', bench_json_loads, objs, inner_loops=20)

@@ -72,6 +72,17 @@ if __name__ == "__main__":
 
     tmp_path = setup(NUM_FILES)
     try:
-        runner.bench_time_func('pathlib', bench_pathlib, tmp_path)
+        cds_mode = None
+        try:
+            import cds
+
+            cds_mode = cds._cds.flags.mode
+        except ImportError:
+            pass
+
+        if cds_mode == 1:
+            bench_pathlib(1, tmp_path)
+        else:
+            runner.bench_time_func('pathlib', bench_pathlib, tmp_path)
     finally:
         shutil.rmtree(tmp_path)
