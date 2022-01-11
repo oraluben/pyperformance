@@ -98,5 +98,17 @@ if __name__ == "__main__":
                                   help="Number of rows (default: 100)")
 
     args = runner.parse_args()
-    runner.bench_time_func('sqlalchemy_declarative', bench_sqlalchemy,
-                           args.rows)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_sqlalchemy(1, args.rows)
+    else:
+        runner.bench_time_func('sqlalchemy_declarative', bench_sqlalchemy,
+                               args.rows)

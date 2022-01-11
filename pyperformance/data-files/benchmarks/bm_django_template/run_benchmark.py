@@ -23,7 +23,17 @@ def bench_django_template(runner, size):
     table = [range(size) for _ in range(size)]
     context = Context({"table": table})
 
-    runner.bench_func('django_template', template.render, context)
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        template.render(context)
+    else:
+        runner.bench_func('django_template', template.render, context)
 
 
 def prepare_cmd(runner, cmd):

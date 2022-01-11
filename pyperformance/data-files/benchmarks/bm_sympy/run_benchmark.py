@@ -63,7 +63,19 @@ if __name__ == "__main__":
     else:
         benchmarks = BENCHMARKS
 
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
     for bench in benchmarks:
         name = 'sympy_%s' % bench
         func = globals()['bench_' + bench]
-        runner.bench_time_func(name, bench_sympy, func)
+
+        if cds_mode == 1:
+            bench_sympy(1, func)
+        else:
+            runner.bench_time_func(name, bench_sympy, func)

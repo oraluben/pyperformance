@@ -264,4 +264,16 @@ def bench_mdp(loops):
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "MDP benchmark"
-    runner.bench_time_func('mdp', bench_mdp)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_mdp(1)
+    else:
+        runner.bench_time_func('mdp', bench_mdp)

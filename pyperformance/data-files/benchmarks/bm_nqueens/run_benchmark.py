@@ -59,4 +59,16 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Simple, brute-force N-Queens solver"
 
     queen_count = 8
-    runner.bench_func('nqueens', bench_n_queens, queen_count)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_n_queens(queen_count)
+    else:
+        runner.bench_func('nqueens', bench_n_queens, queen_count)

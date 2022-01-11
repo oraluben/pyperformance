@@ -28,7 +28,18 @@ def main():
     options = {'table': table}
 
     func = functools.partial(tmpl, options=options)
-    runner.bench_func('chameleon', func)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        func()
+    else:
+        runner.bench_func('chameleon', func)
 
 
 if __name__ == '__main__':

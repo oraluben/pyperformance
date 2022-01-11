@@ -52,7 +52,18 @@ def main():
         obj, count = globals()[case]
         data.append((obj, range(count)))
 
-    runner.bench_func('json_dumps', bench_json_dumps, data)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_json_dumps(data)
+    else:
+        runner.bench_func('json_dumps', bench_json_dumps, data)
 
 
 if __name__ == '__main__':

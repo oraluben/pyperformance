@@ -409,7 +409,19 @@ if __name__ == "__main__":
     else:
         benchmarks = sorted(BENCHMARKS)
 
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
     for bench in benchmarks:
         name = 'scimark_%s' % bench
         args = BENCHMARKS[bench]
-        runner.bench_time_func(name, *args)
+
+        if cds_mode == 1:
+            args[0](1, *args[1:])
+        else:
+            runner.bench_time_func(name, *args)

@@ -59,6 +59,8 @@ def parse_args():
     cmd.add_argument("--append", metavar="FILENAME",
                      help="Add runs to an existing file, or create it "
                      "if it doesn't exist")
+    cmd.add_argument('--install-cds', nargs='?', default=False, const='pycds')
+    cmd.add_argument('--enable-cds', default=None, action='store_true')
     filter_opts(cmd)
 
     # show

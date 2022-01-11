@@ -128,7 +128,19 @@ def bench_mako(runner, table_size, nparagraph, img_count):
                              table=table, paragraphs=paragraphs,
                              lorem=LOREM_IPSUM, title=title,
                              img_count=img_count, range=range)
-    runner.bench_func('mako', func)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        func()
+    else:
+        runner.bench_func('mako', func)
 
 
 if __name__ == "__main__":

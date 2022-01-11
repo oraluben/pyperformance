@@ -121,6 +121,7 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
     def create(cls, root=None, python=None, *,
                inherit_environ=None,
                install=True,
+               install_cds=False,
                ):
         env = _get_envvars(inherit_environ)
         try:
@@ -129,6 +130,7 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
             print(f'ERROR: {exc}')
             sys.exit(1)
         self.inherit_environ = inherit_environ
+        self.install_cds = install_cds
 
         try:
             self.ensure_pip()
@@ -192,6 +194,9 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
             )
             if ec != 0:
                 sys.exit(ec)
+
+        if self.install_cds:
+            _pip.run_pip('install', self.install_cds)
 
         # XXX not for benchmark venvs
         if install:

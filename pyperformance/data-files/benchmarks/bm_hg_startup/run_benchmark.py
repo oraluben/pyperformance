@@ -37,4 +37,18 @@ if __name__ == "__main__":
     runner.metadata['hg_version'] = get_hg_version(hg_bin)
 
     command = [sys.executable, hg_bin, "help"]
-    runner.bench_command('hg_startup', command)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        from subprocess import run, DEVNULL
+
+        run(command, env={'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst'}, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        runner.bench_command('hg_startup', command)
+

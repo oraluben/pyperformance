@@ -282,5 +282,16 @@ if __name__ == "__main__":
     runner.metadata['pickle_protocol'] = str(options.protocol)
     runner.metadata['pickle_module'] = pickle.__name__
 
-    runner.bench_time_func(name, benchmark,
-                           pickle, options, inner_loops=inner_loops)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        benchmark(1, pickle, options)
+    else:
+        runner.bench_time_func(name, benchmark,
+                               pickle, options, inner_loops=inner_loops)

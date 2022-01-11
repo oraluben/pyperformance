@@ -15,4 +15,17 @@ if __name__ == "__main__":
     pyfiles = glob.glob(os.path.join(datadir, '*.py.txt'))
 
     command = [sys.executable, "-m", "lib2to3", "-f", "all"] + pyfiles
-    runner.bench_command('2to3', command)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        from subprocess import run, DEVNULL
+
+        run(command, env={'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst'}, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        runner.bench_command('2to3', command)

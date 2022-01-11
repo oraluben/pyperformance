@@ -71,4 +71,17 @@ if __name__ == "__main__":
     runner.metadata['description'] = (
         'MathWorld: "Hundred-Dollar, Hundred-Digit Challenge Problems", '
         'Challenge #3.')
-    runner.bench_time_func('spectral_norm', bench_spectral_norm)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_spectral_norm(1)
+    else:
+        runner.bench_time_func('spectral_norm', bench_spectral_norm)
+

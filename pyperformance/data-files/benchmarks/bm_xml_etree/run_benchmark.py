@@ -282,6 +282,14 @@ if __name__ == "__main__":
     else:
         benchmarks = BENCHMARKS
 
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
     # Run the benchmark
     for bench in benchmarks:
         if accelerator:
@@ -289,4 +297,8 @@ if __name__ == "__main__":
         else:
             name = 'xml_etree_pure_python_%s' % bench
         bench_func = globals()['bench_%s' % bench]
-        runner.bench_time_func(name, bench_etree, etree_module, bench_func)
+
+        if cds_mode == 1:
+            bench_etree(1, etree_module, bench_func)
+        else:
+            runner.bench_time_func(name, bench_etree, etree_module, bench_func)

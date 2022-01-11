@@ -57,4 +57,16 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Float benchmark"
 
     points = POINTS
-    runner.bench_func('float', benchmark, points)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        benchmark(points)
+    else:
+        runner.bench_func('float', benchmark, points)

@@ -24,5 +24,17 @@ if __name__ == "__main__":
 
     repo = dulwich.repo.Repo(repo_path)
     head = repo.head()
-    runner.bench_func('dulwich_log', iter_all_commits, repo)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        iter_all_commits(repo)
+    else:
+        runner.bench_func('dulwich_log', iter_all_commits, repo)
+
     repo.close()

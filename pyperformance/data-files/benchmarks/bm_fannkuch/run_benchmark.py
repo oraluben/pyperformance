@@ -55,4 +55,18 @@ def fannkuch(n):
 if __name__ == "__main__":
     runner = pyperf.Runner()
     arg = DEFAULT_ARG
-    runner.bench_func('fannkuch', fannkuch, arg)
+
+
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        fannkuch(arg)
+    else:
+        runner.bench_func('fannkuch', fannkuch, arg)
+

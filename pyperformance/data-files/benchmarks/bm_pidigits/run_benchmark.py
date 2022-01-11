@@ -67,4 +67,16 @@ if __name__ == "__main__":
     args = runner.parse_args()
     runner.metadata['description'] = "Compute digits of pi."
     runner.metadata['pidigits_ndigit'] = args.digits
-    runner.bench_func('pidigits', calc_ndigits, args.digits)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        calc_ndigits(args.digits)
+    else:
+        runner.bench_func('pidigits', calc_ndigits, args.digits)

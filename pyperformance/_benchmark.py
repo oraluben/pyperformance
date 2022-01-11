@@ -173,6 +173,7 @@ class Benchmark:
     def run(self, python, runid=None, pyperf_opts=None, *,
             venv=None,
             verbose=False,
+            enable_cds=None,
             ):
         if venv and python == sys.executable:
             python = venv.python
@@ -189,6 +190,7 @@ class Benchmark:
             extra_opts=self.extra_opts,
             pyperf_opts=pyperf_opts,
             verbose=verbose,
+            enable_cds=enable_cds,
         )
 
         return bench
@@ -201,6 +203,7 @@ def _run_perf_script(python, runscript, runid, *,
                     extra_opts=None,
                     pyperf_opts=None,
                     verbose=False,
+                    enable_cds=None,
                     ):
     if not runscript:
         raise ValueError('missing runscript')
@@ -214,10 +217,10 @@ def _run_perf_script(python, runscript, runid, *,
             '--output', tmp,
         ]
         if pyperf_opts and '--copy-env' in pyperf_opts:
-            argv, env = _prep_cmd(python, runscript, opts, runid, NOOP)
+            argv, env = _prep_cmd(python, runscript, opts, runid, NOOP, enable_cds)
         else:
             opts, inherit_envvar = _resolve_restricted_opts(opts)
-            argv, env = _prep_cmd(python, runscript, opts, runid, inherit_envvar)
+            argv, env = _prep_cmd(python, runscript, opts, runid, inherit_envvar, enable_cds)
         hide_stderr = not verbose
         ec, _, stderr = _utils.run_cmd(
             argv,
@@ -233,7 +236,7 @@ def _run_perf_script(python, runscript, runid, *,
         return pyperf.BenchmarkSuite.load(tmp)
 
 
-def _prep_cmd(python, script, opts, runid, on_set_envvar=None):
+def _prep_cmd(python, script, opts, runid, on_set_envvar=None, enable_cds=False):
     # Populate the environment variables.
     env = dict(os.environ)
     def set_envvar(name, value):
@@ -249,6 +252,21 @@ def _prep_cmd(python, script, opts, runid, on_set_envvar=None):
         python, '-u', script,
         *(opts or ()),
     ]
+
+    if enable_cds:
+        # fixme: class list and archive will be in working directory
+        _utils.run_command(['rm', '-rf', 'test.lst', 'test.img'])
+        _utils.run_command(argv, {'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst', **env})
+        _utils.run_command([python, '-c', f'import cds.dump; cds.dump.run_dump("test.lst", "test.img")'], env)
+        assert os.path.exists('test.img')
+        set_envvar('PYCDSMODE', 'SHARE')
+        set_envvar('PYCDSARCHIVE', 'test.img')
+
+        # rebuild argv for additional envs
+        argv = [
+            python, '-u', script,
+            *(opts or ()),
+        ]
 
     return argv, env
 

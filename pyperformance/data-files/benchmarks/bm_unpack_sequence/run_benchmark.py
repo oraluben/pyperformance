@@ -454,4 +454,15 @@ if __name__ == "__main__":
     else:
         func = bench_all
 
-    runner.bench_time_func(name, func, inner_loops=400)
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        func(1)
+    else:
+        runner.bench_time_func(name, func, inner_loops=400)

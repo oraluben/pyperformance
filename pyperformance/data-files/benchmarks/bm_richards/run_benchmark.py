@@ -420,4 +420,16 @@ if __name__ == "__main__":
     runner.metadata['description'] = "The Richards benchmark"
 
     richard = Richards()
-    runner.bench_func('richards', richard.run, 1)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        richard.run(1)
+    else:
+        runner.bench_func('richards', richard.run, 1)

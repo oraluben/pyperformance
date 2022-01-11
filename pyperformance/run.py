@@ -79,6 +79,7 @@ def run_benchmarks(should_run, python, options):
             info,
             inherit_environ=options.inherit_environ,
             refresh=not alreadyseen,
+            install_cds=options.install_cds,
         )
         try:
             # XXX Do not override when there is a requirements collision.
@@ -132,6 +133,7 @@ def run_benchmarks(should_run, python, options):
                 pyperf_opts,
                 venv=bench_venv,
                 verbose=options.verbose,
+                enable_cds=options.enable_cds,
             )
         except Exception as exc:
             print("ERROR: Benchmark %s failed: %s" % (name, exc))

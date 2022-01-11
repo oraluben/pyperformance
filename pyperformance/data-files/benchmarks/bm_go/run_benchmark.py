@@ -458,4 +458,16 @@ if __name__ == "__main__":
         kw['warmups'] = 50
     runner = pyperf.Runner(**kw)
     runner.metadata['description'] = "Test the performance of the Go benchmark"
-    runner.bench_func('go', versus_cpu)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        versus_cpu()
+    else:
+        runner.bench_func('go', versus_cpu)
