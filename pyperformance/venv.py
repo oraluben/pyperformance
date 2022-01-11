@@ -131,6 +131,8 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
             sys.exit(1)
         self.inherit_environ = inherit_environ
         self.install_cds = install_cds
+        if install_cds and self._name:
+            self._name += '-cds'
 
         try:
             self.ensure_pip()
