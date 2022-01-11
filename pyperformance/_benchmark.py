@@ -247,6 +247,7 @@ def _prep_cmd(python, script, opts, runid, on_set_envvar=None, enable_cds=False)
         # fixme: class list and archive will be in working directory
         _utils.run_command(['rm', '-rf', 'test.lst', 'test.img'])
         _utils.run_command(argv, {'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst', **env})
+        assert os.path.exists('test.lst')
         _utils.run_command([python, '-c', f'import cds.dump; cds.dump.run_dump("test.lst", "test.img")'], env)
         assert os.path.exists('test.img')
         set_envvar('PYCDSMODE', 'SHARE')
