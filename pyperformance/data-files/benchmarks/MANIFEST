@@ -54,6 +54,7 @@ unpickle_list	<local:pickle>
 unpickle_pure_python	<local:pickle>
 xml_etree	<local>
 
+module_load_attr	<local>
 
 #[groups]
 #startup
