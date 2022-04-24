@@ -255,19 +255,24 @@ def _prep_cmd(python, script, opts, runid, on_set_envvar=None, enable_cds=False)
 
     if enable_cds:
         # fixme: class list and archive will be in working directory
-        _utils.run_command(['rm', '-rf', 'test.lst', 'test.img'])
-        _utils.run_command(argv, {'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst', **env})
-        assert os.path.exists('test.lst')
-        _utils.run_command([python, '-c', f'import cds.dump; cds.dump.run_dump("test.lst", "test.img")'], env)
-        assert os.path.exists('test.img')
-        set_envvar('PYCDSMODE', 'SHARE')
-        set_envvar('PYCDSARCHIVE', 'test.img')
+        _utils.run_cmd(['rm', '-rf', 'test.lst', 'test.img'])
 
-        # rebuild argv for additional envs
-        argv = [
-            python, '-u', script,
-            *(opts or ()),
-        ]
+        def _update_inherit_environ_build_argv(cds_mode, cds_list=None, cds_archive=None):
+            set_envvar('PYCDSMODE', cds_mode)
+            if cds_list: set_envvar('PYCDSLIST', cds_list)
+            if cds_archive: set_envvar('PYCDSARCHIVE', cds_archive)
+            return [
+                python, '-u', script,
+                *(opts or ()),
+            ]
+
+        _utils.run_cmd(_update_inherit_environ_build_argv('TRACE', cds_list='test.lst'),
+                       env={'PYCDSMODE': 'TRACE', 'PYCDSLIST': 'test.lst', **env})
+        assert os.path.exists('test.lst')
+        _utils.run_cmd([python, '-c', f'import cds.dump; cds.dump.run_dump("test.lst", "test.img")'])
+        assert os.path.exists('test.img')
+
+        argv = _update_inherit_environ_build_argv('SHARE', cds_archive='test.img')
 
     return argv, env
 

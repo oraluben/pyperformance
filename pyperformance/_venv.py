@@ -83,11 +83,11 @@ def resolve_venv_python(root):
         return os.path.join(root, 'bin', python_exe)
 
 
-def get_venv_root(name=None, venvsdir='venv', *, python=sys.executable):
+def get_venv_root(name=None, venvsdir='venv', *, python=sys.executable, install_cds=False):
     """Return the venv root to use for the given name (or given python)."""
     if not name:
         from .run import get_run_id
-        runid = get_run_id(python)
+        runid = get_run_id(python, install_cds=install_cds)
         name = runid.name
     return os.path.abspath(
         os.path.join(venvsdir or '.', name),
@@ -124,13 +124,18 @@ class VirtualEnvironment:
     _env = None
 
     @classmethod
-    def create(cls, root=None, python=sys.executable, **kwargs):
-        if not python or isinstance(python, str):
-            info = _pythoninfo.get_info(python)
+    def create(cls, root=None, python=sys.executable, install_cds=False, **kwargs):
+        if not python:
+            python = sys.executable
+        if isinstance(python, str):
+            try:
+                info = _pythoninfo.get_info(python)
+            except FileNotFoundError:
+                info = None
         else:
             info = python
         if not root:
-            root = get_venv_root(python=info)
+            root = get_venv_root(python=info, install_cds=install_cds)
 
         print("Creating the virtual environment %s" % root)
         if venv_exists(root):
@@ -139,13 +144,15 @@ class VirtualEnvironment:
         try:
             venv_python = create_venv(
                 root,
-                info,
+                info or python,
                 **kwargs
             )
         except BaseException:
             _utils.safe_rmtree(root)
             raise  # re-raise
-        self = cls(root, base=info)
+        if not info:
+            info = _pythoninfo.get_info(python)
+        self = cls(root, base=info, install_cds=install_cds)
         self._python = venv_python
         return self
 
@@ -156,9 +163,10 @@ class VirtualEnvironment:
         else:
             return cls.create(root, python, **kwargs)
 
-    def __init__(self, root, *, base=None):
+    def __init__(self, root, *, base=None, install_cds=False):
         assert os.path.exists(resolve_venv_python(root)), root
         self.root = root
+        self.install_cds = install_cds
         if base:
             self._base = base
 
@@ -197,17 +205,46 @@ class VirtualEnvironment:
             self._base = _pythoninfo.get_info(base_exe)
             return self._base
 
-    def ensure_pip(self, downloaddir=None):
+    def ensure_pip(self, downloaddir=None, *, installer=True, upgrade=True):
+        if not upgrade and _pip.is_pip_installed(self.python, env=self._env):
+            return
         ec, _, _ = _pip.install_pip(
             self.python,
             info=self.info,
             downloaddir=downloaddir or self.root,
             env=self._env,
+            upgrade=upgrade,
         )
         if ec != 0:
             raise VenvPipInstallFailedError(root, ec)
         elif not _pip.is_pip_installed(self.python, env=self._env):
             raise VenvPipInstallFailedError(root, 0, "pip doesn't work")
+
+        if installer:
+            # Upgrade installer dependencies (setuptools, ...)
+            ec, _, _ = _pip.ensure_installer(
+                self.python,
+                env=self._env,
+                upgrade=True,
+            )
+            if ec != 0:
+                raise RequirementsInstallationFailedError('wheel')
+        self.ensure_cds()
+
+    def upgrade_pip(self, *, installer=True):
+        ec, _, _ = _pip.upgrade_pip(
+            self.python,
+            info=self.info,
+            env=self._env,
+            installer=installer,
+        )
+        if ec != 0:
+            raise RequirementsInstallationFailedError('pip')
+        self.ensure_cds()
+
+    def ensure_cds(self):
+        if self.install_cds:
+            _pip.run_pip('install', self.install_cds, python=self.python, env=self._env)
 
     def ensure_reqs(self, *reqs, upgrade=True):
         print("Installing requirements into the virtual environment %s" % self.root)

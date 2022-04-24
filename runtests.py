@@ -7,17 +7,22 @@ from dev import ensure_venv_ready
 
 
 def main():
-    python = ensure_venv_ready(kind='tests')
+    venvroot, python = ensure_venv_ready(kind='tests')
     if python != sys.executable:
         # Now re-run using the venv.
         os.execv(python, [python, *sys.argv])
         # <unreachable>
 
     # Now run the tests.
-    subprocess.run(
+    proc = subprocess.run(
         [sys.executable, '-u', '-m', 'pyperformance.tests'],
         cwd=os.path.dirname(__file__) or None,
+        env=dict(
+            os.environ,
+            PYPERFORMANCE_TESTS_VENV=venvroot,
+        )
     )
+    sys.exit(proc.returncode)
 
 
 if __name__ == "__main__":
