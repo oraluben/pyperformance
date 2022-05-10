@@ -3,29 +3,27 @@ import hashlib
 import sys
 import time
 import traceback
-try:
-    import multiprocessing
-except ImportError:
-    multiprocessing = None
 
 import pyperformance
-from . import _utils, _pythoninfo
-from . import venv as _venv
+from . import _utils, _python, _pythoninfo
+from .venv import VenvForBenchmarks, REQUIREMENTS_FILE
+from . import _venv
 
 
 class BenchmarkException(Exception):
     pass
 
 
-class RunID(namedtuple('RunID', 'python compat bench timestamp')):
+class RunID(namedtuple('RunID', 'python compat bench timestamp install_cds')):
 
-    def __new__(cls, python, compat, bench, timestamp):
+    def __new__(cls, python, compat, bench, timestamp, install_cds):
         self = super().__new__(
             cls,
             python,
             compat,
             bench or None,
             int(timestamp) if timestamp else None,
+            install_cds,
         )
         return self
 
@@ -42,57 +40,73 @@ class RunID(namedtuple('RunID', 'python compat bench timestamp')):
             name = f'{self.python}-compat-{self.compat}'
             if self.bench:
                 name = f'{name}-bm-{self.bench.name}'
+            if self.install_cds:
+                name += '-cds'
             self._name = name
             return self._name
 
 
-def get_run_id(python, bench=None):
-    py_id = _pythoninfo.get_python_id(python, prefix=True)
+def get_run_id(python, bench=None, install_cds=False):
+    py_id = _python.get_id(python, prefix=True)
     compat_id = get_compatibility_id(bench)
     ts = time.time()
-    return RunID(py_id, compat_id, bench, ts)
+    return RunID(py_id, compat_id, bench, ts, install_cds)
 
 
 def run_benchmarks(should_run, python, options):
     to_run = sorted(should_run)
 
-    runid = get_run_id(python)
+    info = _pythoninfo.get_info(python)
+    runid = get_run_id(info, install_cds=options.install_cds)
+
+    unique = getattr(options, 'unique_venvs', False)
+    if not unique:
+        common = VenvForBenchmarks.ensure(
+            _venv.get_venv_root(runid.name, python=info),
+            info,
+            upgrade='oncreate',
+            inherit_environ=options.inherit_environ,
+            install_cds=options.install_cds,
+        )
 
     benchmarks = {}
     venvs = set()
-    if options.venv:
-        venv = _venv.VirtualEnvironment(
-            options.python,
-            options.venv,
-            inherit_environ=options.inherit_environ,
-            install_cds=options.install_cds,
-        )
-        venv.ensure(refresh=False)
-        venvs.add(venv.get_path())
     for i, bench in enumerate(to_run):
         bench_runid = runid._replace(bench=bench)
         assert bench_runid.name, (bench, bench_runid)
-        venv = _venv.VirtualEnvironment(
-            options.python,
-            options.venv,
+        name = bench_runid.name
+        venv_root = _venv.get_venv_root(name, python=info, install_cds=options.install_cds)
+        print()
+        print('='*50)
+        print(f'({i+1:>2}/{len(to_run)}) creating venv for benchmark ({bench.name})')
+        print()
+        if not unique:
+            print('(trying common venv first)')
+            # Try the common venv first.
+            try:
+                common.ensure_reqs(bench)
+            except _venv.RequirementsInstallationFailedError:
+                print('(falling back to unique venv)')
+            else:
+                benchmarks[bench] = (common, bench_runid)
+                continue
+        venv = VenvForBenchmarks.ensure(
+            venv_root,
+            info,
+            upgrade='oncreate',
             inherit_environ=options.inherit_environ,
-            name=bench_runid.name,
-            usebase=True,
             install_cds=options.install_cds,
         )
-        print(f'({i+1:>2}/{len(to_run)}) creating venv for benchmark ({bench.name})')
-        venv_path = venv.get_path()
-        alreadyseen = venv_path in venvs
-        venv.ensure(refresh=not alreadyseen)
         try:
             # XXX Do not override when there is a requirements collision.
-            venv.install_reqs(bench)
+            venv.ensure_reqs(bench)
         except _venv.RequirementsInstallationFailedError:
             print('(benchmark will be skipped)')
             print()
             venv = None
-        venvs.add(venv_path)
+        venvs.add(venv_root)
         benchmarks[bench] = (venv, bench_runid)
+    print()
 
     suite = None
     run_count = str(len(to_run))
@@ -131,7 +145,7 @@ def run_benchmarks(should_run, python, options):
             continue
         try:
             result = bench.run(
-                python,
+                bench_venv.python,
                 bench_runid,
                 pyperf_opts,
                 venv=bench_venv,
@@ -154,7 +168,7 @@ def run_benchmarks(should_run, python, options):
 
 def get_compatibility_id(bench=None):
     # XXX Do not include the pyperformance reqs if a benchmark was provided?
-    reqs = sorted(_utils.iter_clean_lines(_venv.REQUIREMENTS_FILE))
+    reqs = sorted(_utils.iter_clean_lines(REQUIREMENTS_FILE))
     if bench:
         lockfile = bench.requirements_lockfile
         if lockfile and os.path.exists(lockfile):
