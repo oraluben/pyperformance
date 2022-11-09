@@ -26,4 +26,15 @@ def bench_coverage(loops: int) -> None:
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "Benchmark coverage"
-    runner.bench_time_func('coverage', bench_coverage)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_coverage(1)
+    else:
+        runner.bench_time_func('coverage', bench_coverage)

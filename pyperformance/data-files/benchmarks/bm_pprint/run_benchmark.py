@@ -17,7 +17,19 @@ if __name__ == '__main__':
     runner = pyperf.Runner()
     runner.metadata['description'] = 'pprint benchmark'
 
-    if hasattr(p, '_safe_repr'):
-        runner.bench_func('pprint_safe_repr', p._safe_repr,
-                          printable, {}, None, 0)
-    runner.bench_func('pprint_pformat', p.pformat, printable)
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        if hasattr(p, '_safe_repr'):
+            p._safe_repr(printable, {}, None, 0)
+        p.pformat(printable)
+    else:
+        if hasattr(p, '_safe_repr'):
+            runner.bench_func('pprint_safe_repr', p._safe_repr,
+                              printable, {}, None, 0)
+        runner.bench_func('pprint_pformat', p.pformat, printable)

@@ -141,5 +141,16 @@ if __name__ == "__main__":
 
     async_tree_class = BENCHMARKS[benchmark]
     async_tree = async_tree_class()
-    runner.bench_async_func(f"async_tree_{benchmark}", async_tree.run)
 
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        import asyncio
+        asyncio.run(async_tree.run())
+    else:
+        runner.bench_async_func(f"async_tree_{benchmark}", async_tree.run)

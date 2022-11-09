@@ -34,4 +34,15 @@ def benchamark_collection(loops, n_levels):
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata["description"] = "GC traversal benchmark"
-    runner.bench_time_func("gc_traversal", benchamark_collection, N_LEVELS)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        benchamark_collection(1, N_LEVELS)
+    else:
+        runner.bench_time_func("gc_traversal", benchamark_collection, N_LEVELS)

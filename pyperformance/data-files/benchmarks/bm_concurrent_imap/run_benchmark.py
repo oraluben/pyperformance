@@ -28,5 +28,17 @@ if __name__ == "__main__":
     count = 1000
     chunk = 10
     num_core = 2
-    runner.bench_func("bench_mp_pool", bench_mp_pool, num_core, count, chunk)
-    runner.bench_func("bench_thread_pool", bench_thread_pool, num_core, count, chunk)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_mp_pool(num_core, count, chunk)
+        bench_thread_pool(num_core, count, chunk)
+    else:
+        runner.bench_func("bench_mp_pool", bench_mp_pool, num_core, count, chunk)
+        runner.bench_func("bench_thread_pool", bench_thread_pool, num_core, count, chunk)

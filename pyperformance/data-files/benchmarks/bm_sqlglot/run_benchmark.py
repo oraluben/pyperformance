@@ -167,7 +167,21 @@ def bench_normalize(loops):
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "SQLGlot benchmark"
-    runner.bench_time_func("sqlglot_parse", bench_parse)
-    runner.bench_time_func("sqlglot_transpile", bench_transpile)
-    runner.bench_time_func("sqlglot_optimize", bench_optimize)
-    runner.bench_time_func("sqlglot_normalize", bench_normalize)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_parse(1)
+        bench_transpile(1)
+        bench_optimize(1)
+        bench_normalize(1)
+    else:
+        runner.bench_time_func("sqlglot_parse", bench_parse)
+        runner.bench_time_func("sqlglot_transpile", bench_transpile)
+        runner.bench_time_func("sqlglot_optimize", bench_optimize)
+        runner.bench_time_func("sqlglot_normalize", bench_normalize)

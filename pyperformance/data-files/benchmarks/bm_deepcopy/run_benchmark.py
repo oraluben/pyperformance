@@ -83,6 +83,18 @@ if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "deepcopy benchmark"
 
-    runner.bench_time_func('deepcopy', benchmark)
-    runner.bench_time_func('deepcopy_reduce', benchmark_reduce)
-    runner.bench_time_func('deepcopy_memo', benchmark_memo)
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        benchmark(1)
+        benchmark_reduce(1)
+        benchmark_memo(1)
+    else:
+        runner.bench_time_func('deepcopy', benchmark)
+        runner.bench_time_func('deepcopy_reduce', benchmark_reduce)
+        runner.bench_time_func('deepcopy_memo', benchmark_memo)

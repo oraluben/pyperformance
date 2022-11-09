@@ -46,4 +46,15 @@ def bench_generators(loops: int) -> float:
 if __name__ == "__main__":
     runner = pyperf.Runner()
     runner.metadata['description'] = "Benchmark generators"
-    runner.bench_time_func('generators', bench_generators)
+
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_generators(1)
+    else:
+        runner.bench_time_func('generators', bench_generators)

@@ -1787,4 +1787,16 @@ if __name__ == '__main__':
     runner = pyperf.Runner()
     runner.metadata['description'] = ("Test the performance of regexps "
                                       "using V8's benchmarks")
-    runner.bench_time_func('regex_v8', bench_regex_v8)
+
+    cds_mode = None
+    try:
+        import cds
+
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_regex_v8(1)
+    else:
+        runner.bench_time_func('regex_v8', bench_regex_v8)

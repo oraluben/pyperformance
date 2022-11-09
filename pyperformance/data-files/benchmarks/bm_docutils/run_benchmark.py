@@ -52,4 +52,14 @@ if __name__ == "__main__":
     runner.metadata['description'] = "Render documentation with Docutils"
     args = runner.parse_args()
 
-    runner.bench_time_func("docutils", bench_docutils, DOC_ROOT)
+    cds_mode = None
+    try:
+        import cds
+        cds_mode = cds._cds.flags.mode
+    except ImportError:
+        pass
+
+    if cds_mode == 1:
+        bench_docutils(1, DOC_ROOT)
+    else:
+        runner.bench_time_func("docutils", bench_docutils, DOC_ROOT)
