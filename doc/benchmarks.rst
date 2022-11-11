@@ -57,6 +57,22 @@ depending on the Python version.
    them, and more generally to not modify them.
 
 
+async_tree
+----------
+
+Async workload benchmark, which calls ``asyncio.gather()`` on a tree (6 levels deep,
+6 branches per level) with the leaf nodes simulating some [potentially] async work
+(depending on the benchmark variant). Available variants:
+
+* ``async_tree``: no actual async work at any leaf node.
+* ``async_tree_io``: all leaf nodes simulate async IO workload (async sleep 50ms).
+* ``async_tree_memoization``: all leaf nodes simulate async IO workload with 90% of 
+  the data memoized.
+* ``async_tree_cpu_io_mixed``: half of the leaf nodes simulate CPU-bound workload
+  (``math.factorial(500)``) and the other half simulate the same workload as the 
+  ``async_tree_memoization`` variant.
+
+
 chameleon
 ---------
 
@@ -108,6 +124,11 @@ See `pyaes <https://github.com/ricmoo/pyaes>`_: A pure-Python implementation of
 the AES block cipher algorithm and the common modes of operation (CBC, CFB,
 CTR, ECB and OFB).
 
+deepcopy
+--------
+
+Benchmark the Python `copy.deepcopy` method. The `deepcopy` method is
+performed on a nested dictionary and a dataclass.
 
 deltablue
 ---------
@@ -152,6 +173,15 @@ Pseudo-code of the benchmark::
 
 See the `Dulwich project <https://www.dulwich.io/>`_.
 
+
+
+docutils
+--------
+
+Use Docutils_ to convert Docutils' documentation to HTML.
+Representative of building a medium-sized documentation set.
+
+.. _Docutils: https://docutils.sourceforge.io/
 
 fannkuch
 --------

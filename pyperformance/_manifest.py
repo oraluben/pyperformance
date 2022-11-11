@@ -24,6 +24,7 @@ BENCH_HEADER = '\t'.join(BENCH_COLUMNS)
 def load_manifest(filename, *, resolve=None):
     if not filename:
         filename = DEFAULT_MANIFEST
+    filename = _utils.resolve_file(filename)
     sections = _parse_manifest_file(filename)
     return BenchmarksManifest._from_sections(sections, resolve, filename)
 
@@ -95,51 +96,47 @@ class BenchmarksManifest:
     @property
     def groups(self):
         names = self._custom_groups()
-        if not names:
-            names = set(self._get_tags())
         return names | {'all', 'default'}
+
+    @property
+    def tags(self):
+        return set(self._get_tags())
 
     @property
     def filename(self):
         return self._raw_filename
 
     def _add_sections(self, sections, resolve):
-        filename = self._raw_filename
-        _resolve = resolve
-        if resolve is None and filename == DEFAULT_MANIFEST:
-            _resolve = default_resolve = resolve_default_benchmark
-        sections_seen = {filename: set()}
-        lastfile = None
+        seen_by_file = {}
         for filename, section, data in sections:
-            if filename != lastfile:
-                _resolve = resolve
-                if _resolve is None and filename == DEFAULT_MANIFEST:
-                    _resolve = resolve_default_benchmark
-            lastfile = filename
+            try:
+                seen = seen_by_file[filename]
+            except KeyError:
+                seen = seen_by_file[filename] = set()
+            self._add_section_for_file(filename, section, data, resolve, seen)
 
-            section_key = section
-            if section == "group":
-                section_key = (section, data[0])
+    def _add_section_for_file(self, filename, section, data, resolve, seen):
+        if resolve is None and filename == DEFAULT_MANIFEST:
+            resolve = resolve_default_benchmark
 
-            if filename not in sections_seen:
-                sections_seen[filename] = {section_key}
-            elif section_key in sections_seen[filename]:
+        if section == 'group':
+            name, entries = data
+            self._add_group(name, entries)
+        else:
+            # All sections with an identifier have already been handled.
+            if section in seen:
                 # For now each section_key can only show up once.
-                raise NotImplementedError((section_key, data))
-            else:
-                sections_seen[filename].add(section_key)
+                raise NotImplementedError((section, data))
+            seen.add(section)
 
             if section == 'includes':
                 pass
             elif section == 'benchmarks':
                 entries = ((s, m, filename) for s, m in data)
-                self._add_benchmarks(entries, _resolve)
+                self._add_benchmarks(entries, resolve)
             elif section == 'groups':
                 for name in data:
                     self._add_group(name, None)
-            elif section == 'group':
-                name, entries = data
-                self._add_group(name, entries)
             else:
                 raise NotImplementedError((section, data))
 
@@ -151,6 +148,8 @@ class BenchmarksManifest:
     def _add_benchmark(self, spec, metafile, resolve, filename):
         if spec.name in self._raw_groups:
             raise ValueError(f'a group and a benchmark have the same name ({spec.name})')
+        if spec.name == 'all':
+            raise ValueError('a benchmark named "all" is not allowed ("all" is reserved for selecting the full set of declared benchmarks)')
         if metafile:
             if filename:
                 localdir = os.path.dirname(filename)
@@ -162,6 +161,8 @@ class BenchmarksManifest:
         self._raw_benchmarks.append((spec, metafile, filename))
         if resolve is not None:
             bench = resolve(bench)
+        if bench.name in self._byname:
+            raise ValueError(f'a benchmark named {bench.name} was already declared')
         self._byname[bench.name] = bench
         self._groups = None  # Force re-resolution.
         self._tags = None  # Force re-resolution.
@@ -170,18 +171,15 @@ class BenchmarksManifest:
         if name in self._byname:
             raise ValueError(f'a group and a benchmark have the same name ({name})')
         if name == 'all':
-            # XXX Emit a warning?
-            return
-        if entries:
-            raw = self._raw_groups.get(name)
-            if raw is None:
-                raw = self._raw_groups[name] = list(entries) if entries else None
-            elif entries is not None:
-                raw.extend(entries)
-        elif name in self._raw_groups:
-            return
-        else:
+            raise ValueError('a group named "all" is not allowed ("all" is reserved for selecting the full set of declared benchmarks)')
+        if entries is None:
+            if name in self._raw_groups:
+                return
             self._raw_groups[name] = None
+        elif name in self._raw_groups and self._raw_groups[name] is not None:
+            raise ValueError(f'a group named {name} was already defined')
+        else:
+            self._raw_groups[name] = list(entries) if entries else []
         self._groups = None  # Force re-resolution.
 
     def _custom_groups(self):
@@ -224,7 +222,7 @@ class BenchmarksManifest:
             groups = self._resolve_groups()
             benchmarks = groups.get(name)
             if not benchmarks:
-                if name in (set(self._raw_groups) - {'default'}):
+                if name not in self._raw_groups:
                     benchmarks = self._get_tags().get(name, ())
                 elif fail:
                     raise KeyError(name)
@@ -279,8 +277,6 @@ def _iter_sections(lines):
 
 
 def _parse_manifest_file(filename):
-    relroot = os.path.dirname(filename)
-    filename = _utils.resolve_file(filename, relroot)
     with open(filename, encoding="utf-8") as infile:
         yield from _parse_manifest(infile, filename)
 
