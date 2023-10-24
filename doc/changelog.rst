@@ -1,7 +1,77 @@
 Changelog
 =========
 
+Version 1.10.0 (2023-10-22)
+--------------
+* Add benchmark for asyncio_webockets
+* Expose --min-time from pyperf to pyperformance CLI
+* Bump coverage to 7.3.2 for compatibilty with 3.13
+* Bump greenlet to 3.0.0rc3 for compatibilty with 3.13
+
+Version 1.0.9 (2023-06-14)
+-------------
+* Vendor lib2to3 for Python 3.13+
+* Add TaskGroups variants to async_tree benchmarks
+
+Version 1.0.8 (2023-06-02)
+-------------
+
+* Move the main requirements.txt file to pyperformance/requirements
+  so that dependabot can only run on that one file
+* Update dependencies of benchmarks not to specify setuptools
+* On older versions of Python, skip benchmarks that use features
+  introduced in newer Python versions
+* Support ``--inherit-environ`` when reusing a venv
+* Use tomllib/tomli over toml
+* Update MANIFEST.in to include cert files for asyncio_tcp_ssl benchmark
+* Fix undefined variable issue when raising VenvPipInstallFailedError
+* Add mypy config; run mypy in CI
+* Fix typo of str.partition from _pyproject_toml.py
+* Add  version of Richards benchmark that uses super()
+* Add a benchmark for runtime-checkable protocols
+* Extend async tree benchmarks to cover eager task execution
+
+Version 1.0.7 (2023-04-22)
+-------------
+
+* Upgrade pyperf from 2.5.0 to 2.6.0
+* Clean unused imports and other small code details
+* Migrage to the pyproject.toml based project
+* Fix the django_template benchmark due to lack of distutils
+* Add benchmark for toml
+* Add benchmark for comprehensions
+* Add benchmark for asyncio_tcp_ssl
+* Add benchmark for asyncio_tcp
+* Add benchmark for Dask scheduler
+* Add the gc benchmarks to the MANIFEST file
+
+Version 1.0.6 (2022-11-20)
+-------------
+
 * Upgrade pyperf from 2.4.1 to 2.5.0
+* Add a benchmark to measure gc traversal
+* Add jobs field in compile section to specify make -j param
+* Add benchmark for Docutils
+* Add async_generators benchmark
+* Add benchmark for IPC
+* Fix Manifest Group
+* Fix installing dev build of pyperformance inside compile/compile_all
+* Always upload, even when some benchmarks fail
+* Add sqlglot benchmarks
+* Support reporting geometric mean by tags
+* Allow for specifying local wheels and sdists as dependencies
+* Add a benchmark based on `python -m pprint`
+* Add mdp back into the default group
+* Add coroutines benchmark
+* Reduce noise in generators benchmark
+* Add benchmark for deepcopy
+* Add coverage benchmark
+* Add generators benchmark
+* Add benchmark for async tree workloads
+* Support relative paths to manifest files
+* Add support for multiple benchmark groups in a manifest
+* Fix --inherit-environ issue
+* Use working Genshi 0.7.7
 
 Version 1.0.4 (2022-01-25)
 -------------

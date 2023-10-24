@@ -6,7 +6,9 @@ import pyperformance
 from . import _utils, _pip, _venv
 
 
-REQUIREMENTS_FILE = os.path.join(pyperformance.DATA_DIR, 'requirements.txt')
+REQUIREMENTS_FILE = os.path.join(
+    os.path.dirname(__file__), 'requirements', 'requirements.txt'
+)
 PYPERF_OPTIONAL = ['psutil']
 
 
@@ -172,6 +174,7 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
 
     @classmethod
     def ensure(cls, root, python=None, *,
+               inherit_environ=None,
                upgrade=False,
                install_cds=False,
                **kwargs
@@ -186,6 +189,7 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
 
         if exists:
             self = super().ensure(root)
+            self.inherit_environ = inherit_environ
             if upgrade:
                 self.upgrade_pip()
             else:
@@ -195,6 +199,7 @@ class VenvForBenchmarks(_venv.VirtualEnvironment):
             return cls.create(
                 root,
                 python,
+                inherit_environ=inherit_environ,
                 upgrade=upgrade,
                 install_cds=install_cds,
                 **kwargs

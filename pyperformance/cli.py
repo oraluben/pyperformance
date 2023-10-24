@@ -74,6 +74,9 @@ def parse_args():
                      "if it doesn't exist")
     cmd.add_argument('--install-cds', nargs='?', default=False, const='pycds')
     cmd.add_argument('--enable-cds', default=None, action='store_true')
+    cmd.add_argument("--min-time", metavar="MIN_TIME",
+                     help="Minimum duration in seconds of a single "
+                     "value, used to calibrate the number of loops")
     filter_opts(cmd)
 
     # show
@@ -228,7 +231,8 @@ def _select_benchmarks(raw, manifest):
 
     # Get the raw list of benchmarks.
     entries = raw.lower()
-    parse_entry = (lambda o, s: _benchmark_selections.parse_selection(s, op=o))
+    def parse_entry(o, s):
+        return _benchmark_selections.parse_selection(s, op=o)
     parsed = _utils.parse_selections(entries, parse_entry)
     parsed_infos = list(parsed)
 
@@ -242,11 +246,15 @@ def _select_benchmarks(raw, manifest):
 
     # Get the selections.
     selected = []
+    this_python_version = ".".join(map(str, sys.version_info[:3]))
     for bench in _benchmark_selections.iter_selections(manifest, parsed_infos):
         if isinstance(bench, str):
             logging.warning(f"no benchmark named {bench!r}")
             continue
-        selected.append(bench)
+        # Filter out any benchmarks that can't be run on the Python version we're running
+        if this_python_version in bench.python:
+            selected.append(bench)
+
     return selected
 
 

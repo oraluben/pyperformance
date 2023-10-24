@@ -13,6 +13,7 @@ import os.path
 import sys
 
 import pyperf
+from packaging.specifiers import SpecifierSet
 
 from . import _utils, _benchmark_metadata
 
@@ -164,9 +165,12 @@ class Benchmark:
     def extra_opts(self):
         return self._get_metadata_value('extra_opts', ())
 
+    @property
+    def python(self):
+        return SpecifierSet(self._get_metadata_value("python", ""))
+
     # Other metadata keys:
     # * base
-    # * python
     # * dependencies
     # * requirements
 
@@ -179,7 +183,7 @@ class Benchmark:
             python = venv.python
 
         if not runid:
-            from ..run import get_run_id
+            from .run import get_run_id
             runid = get_run_id(python, self)
 
         runscript = self.runscript

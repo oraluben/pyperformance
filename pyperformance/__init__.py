@@ -2,7 +2,7 @@ import os.path
 import sys
 
 
-VERSION = (1, 0, 5)
+VERSION = (1, 10, 0)
 __version__ = '.'.join(map(str, VERSION))
 
 
@@ -34,10 +34,10 @@ def _is_devel_install():
     # This means it creates a link back to the checkout instead
     # of copying the files.
     try:
-        import toml
+        import packaging
     except ModuleNotFoundError:
         return False
-    sitepackages = os.path.dirname(os.path.dirname(toml.__file__))
+    sitepackages = os.path.dirname(os.path.dirname(packaging.__file__))
     if os.path.isdir(os.path.join(sitepackages, 'pyperformance')):
         return False
     if not os.path.exists(os.path.join(sitepackages, 'pyperformance.egg-link')):

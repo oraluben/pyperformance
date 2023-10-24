@@ -7,13 +7,32 @@ async_tree	<local>
 async_tree_cpu_io_mixed	<local:async_tree>
 async_tree_io	<local:async_tree>
 async_tree_memoization	<local:async_tree>
+async_tree_eager	<local:async_tree>
+async_tree_eager_cpu_io_mixed	<local:async_tree>
+async_tree_eager_io	<local:async_tree>
+async_tree_eager_memoization	<local:async_tree>
+async_tree_tg	<local:async_tree>
+async_tree_cpu_io_mixed_tg	<local:async_tree>
+async_tree_io_tg	<local:async_tree>
+async_tree_memoization_tg	<local:async_tree>
+async_tree_eager_tg	<local:async_tree>
+async_tree_eager_cpu_io_mixed_tg	<local:async_tree>
+async_tree_eager_io_tg	<local:async_tree>
+async_tree_eager_memoization_tg	<local:async_tree>
+asyncio_tcp	<local>
+asyncio_tcp_ssl	<local:asyncio_tcp>
+asyncio_websockets	<local>
 concurrent_imap	<local>
 coroutines	<local>
 coverage	<local>
+gc_traversal	<local>
+gc_collect	<local>
 generators	<local>
 chameleon	<local>
 chaos	<local>
+comprehensions	<local>
 crypto_pyaes	<local>
+dask	<local>
 deepcopy	<local>
 deltablue	<local>
 django_template	<local>
@@ -52,6 +71,7 @@ regex_dna	<local>
 regex_effbot	<local>
 regex_v8	<local>
 richards	<local>
+richards_super	<local>
 scimark	<local>
 spectral_norm	<local>
 sqlalchemy_declarative	<local>
@@ -60,7 +80,9 @@ sqlglot	<local>
 sqlite_synth	<local>
 sympy	<local>
 telco	<local>
+tomli_loads	<local>
 tornado_http	<local>
+typing_runtime_protocols	<local>
 unpack_sequence	<local>
 unpickle	<local:pickle>
 unpickle_list	<local:pickle>
@@ -70,6 +92,7 @@ xml_etree	<local>
 module_load_attr	<local>
 
 #[groups]
+#asyncio
 #startup
 #regex
 #serialize
